@@ -1,3 +1,80 @@
+[English](#english) | [中文](#中文)
+
+---
+
+## English
+
+# AI Note Search Extension
+
+A browser extension powered by a local AI embedding model for semantic note search. Runs entirely in the browser — no server required, keeping your data private.
+
+## ✨ Features
+
+- **🧠 Semantic Search**: Uses Transformers.js with `Xenova/all-MiniLM-L6-v2` model to find semantically similar notes via cosine similarity
+- **🔤 Fallback Search**: Automatically switches to Fuse.js keyword fuzzy search when the AI model fails to load, with clear UI indication
+- **💾 Local Storage**: Dexie.js wrapping IndexedDB — all data stays in your browser
+- **📥 Import/Export**: JSON-based data backup and restore
+- **🔍 Search Highlighting**: Matched keywords highlighted in search results
+- **📱 Responsive Design**: Switches from side-by-side to stacked layout on narrow screens
+- **🔒 Privacy-First**: All computation (embedding, similarity) runs entirely client-side
+
+## 🚀 Installation
+
+### Download from Release
+
+1. Download the latest release zip from [GitHub Releases](https://github.com/ceo1st/ai-note-search-extension/releases/download/v1.0.0/ai-note-search-extension-v1.0.0.zip)
+2. Unzip the downloaded file
+3. Open Chrome/Edge and navigate to `chrome://extensions/`
+4. Enable "Developer mode" in the top right
+5. Click "Load unpacked" and select the unzipped folder
+6. Click the extension icon in the toolbar to open
+
+### Firefox
+
+1. Download and unzip the release
+2. Navigate to `about:debugging#/runtime/this-firefox`
+3. Click "Load Temporary Add-on"
+4. Select the `manifest.json` file from the unzipped folder
+
+## 📖 Usage
+
+### Creating Notes
+
+1. Click the extension icon to open the main interface
+2. Click "+ New Note" in the left panel
+3. Enter a title and content
+4. Click "💾 Save"
+
+### Searching Notes
+
+1. Type your query in the search bar at the top
+2. Click "Search" or press Enter
+3. Results are sorted by relevance in the left panel
+4. Click any result to view the full note
+
+### Import / Export
+
+- **Export**: Click "📤 Export" to download a JSON backup of all notes and embeddings
+- **Import**: Click "📥 Import" to restore from a JSON file. ⚠️ Warning: importing clears all existing data
+
+## 🏗️ Tech Stack
+
+| Component | Technology | Version |
+|---|---|---|
+| Extension Standard | Manifest V3 | — |
+| Storage | IndexedDB via Dexie.js | 3.2.7 |
+| Embedding Model | Transformers.js | 3.0.0 |
+| Keyword Search | Fuse.js | 7.0.0 |
+| Frontend | Vanilla HTML/CSS/JS ES Modules | — |
+
+## 📄 License
+
+MIT License
+
+---
+
+## 中文
+
 # AI 笔记语义搜索扩展
 
 一款基于本地 AI 嵌入模型的浏览器扩展，支持对笔记进行语义搜索。完全在浏览器端运行，无需服务器，保护您的隐私。
@@ -14,21 +91,21 @@
 
 ## 🚀 安装方法
 
-### Chrome / Edge
+### 从 Release 下载
 
-1. 下载或克隆本项目到本地
-2. 打开浏览器，访问 `chrome://extensions/`（Chrome）或 `edge://extensions/`（Edge）
-3. 开启右上角的「开发者模式」
-4. 点击「加载已解压的扩展程序」
-5. 选择本项目所在的文件夹
+1. 从 [GitHub Releases](https://github.com/ceo1st/ai-note-search-extension/releases/download/v1.0.0/ai-note-search-extension-v1.0.0.zip) 下载最新版本 zip 文件
+2. 解压下载的文件
+3. 打开 Chrome/Edge，访问 `chrome://extensions/`
+4. 开启右上角的「开发者模式」
+5. 点击「加载已解压的扩展程序」，选择解压后的文件夹
 6. 扩展安装完成后，点击工具栏上的扩展图标即可打开
 
 ### Firefox
 
-1. 下载或克隆本项目到本地
+1. 下载并解压 Release
 2. 打开浏览器，访问 `about:debugging#/runtime/this-firefox`
 3. 点击「临时载入附加组件」
-4. 选择项目中的 `manifest.json` 文件
+4. 选择解压文件夹中的 `manifest.json` 文件
 
 ## 📖 使用说明
 
@@ -51,55 +128,15 @@
 - **导出**：点击右上角「📤 导出」按钮，将下载包含所有笔记和嵌入向量的 JSON 文件
 - **导入**：点击「📥 导入」按钮，选择之前导出的 JSON 文件。⚠️ 注意：导入会清空现有所有数据
 
-## 🏗️ 技术架构
+## 🏗️ 技术栈
 
-```
-ai-note-search-extension/
-├── manifest.json          # Manifest V3 配置
-├── background.js          # Service Worker（图标点击处理）
-├── app.html               # 主界面 HTML
-├── app.js                 # 主应用逻辑
-├── styles.css             # 样式表
-├── lib/
-│   ├── db.js              # Dexie.js 数据库封装
-│   ├── vector.js          # 余弦相似度计算
-│   ├── embedding.js       # Transformers.js 嵌入模型
-│   └── fuseSearch.js      # Fuse.js 关键词搜索
-├── icons/
-│   ├── icon16.png
-│   ├── icon48.png
-│   └── icon128.png
-├── README.md              # 中文说明文档
-├── README_EN.md           # 英文说明文档
-└── PRD.md                 # 产品需求文档
-```
-
-### 核心依赖（CDN）
-
-| 库 | 用途 | CDN |
+| 组件 | 技术选型 | 版本 |
 |---|---|---|
-| Dexie.js 3.2.7 | IndexedDB 封装 | unpkg.com |
-| Transformers.js 3.0.0 | AI 嵌入模型 | cdn.jsdelivr.net |
-| Fuse.js 7.0.0 | 关键词模糊搜索 | cdn.jsdelivr.net |
-
-### 搜索流程
-
-1. 用户输入查询词
-2. 如果 AI 模型可用（语义搜索模式）：
-   - 将查询词转为嵌入向量
-   - 与所有笔记的嵌入向量计算余弦相似度
-   - 返回 Top-K 最相似的结果
-3. 如果 AI 模型不可用（关键词搜索模式）：
-   - 使用 Fuse.js 进行模糊关键词匹配
-   - 界面显示降级提示
-4. 渲染搜索结果，高亮匹配内容
-
-## ⚠️ 注意事项
-
-- 首次使用时需要下载 AI 模型（约 23MB），请确保网络连接正常
-- AI 模型需要浏览器支持 WebGPU 或 WASM
-- 所有数据存储在浏览器本地，清除浏览器数据会导致笔记丢失，请定期导出备份
-- 大量笔记（>1000条）时，语义搜索可能会有轻微延迟
+| 扩展标准 | Manifest V3 | — |
+| 存储 | IndexedDB via Dexie.js | 3.2.7 |
+| 嵌入模型 | Transformers.js | 3.0.0 |
+| 关键词搜索 | Fuse.js | 7.0.0 |
+| 前端 | 纯原生 HTML/CSS/JS ES Modules | — |
 
 ## 📄 许可证
 
