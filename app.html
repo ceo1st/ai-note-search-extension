@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 笔记语义搜索</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Dexie.js for IndexedDB -->
+  <script src="https://unpkg.com/dexie@3.2.7/dist/dexie.js"></script>
+  <!-- Fuse.js for keyword fallback search -->
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <h1>🔍 AI 笔记语义搜索</h1>
+      <div class="header-actions">
+        <span id="mode-badge" class="mode-badge" title="当前搜索模式">⏳ 加载中...</span>
+        <button id="btn-import" class="btn btn-secondary" title="导入数据">📥 导入</button>
+        <button id="btn-export" class="btn btn-secondary" title="导出数据">📤 导出</button>
+        <input type="file" id="file-import" accept=".json" style="display:none">
+      </div>
+    </header>
+
+    <!-- Model loading progress -->
+    <div id="model-progress" class="progress-bar-container" style="display:none">
+      <div class="progress-bar">
+        <div id="model-progress-fill" class="progress-bar-fill" style="width:0%"></div>
+      </div>
+      <span id="model-progress-text" class="progress-text">正在加载 AI 模型: 0%</span>
+    </div>
+
+    <!-- Search bar -->
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="搜索笔记..." autocomplete="off">
+      <button id="btn-search" class="btn btn-primary">搜索</button>
+    </div>
+
+    <!-- Search mode indicator -->
+    <div id="search-mode" class="search-mode" style="display:none"></div>
+
+    <!-- Main content area -->
+    <div class="main-content">
+      <!-- Left panel: notes list / search results -->
+      <div class="panel panel-left">
+        <div class="panel-header">
+          <h2 id="list-title">📝 我的笔记</h2>
+          <button id="btn-new-note" class="btn btn-primary btn-sm">+ 新建笔记</button>
+        </div>
+        <div id="notes-list" class="notes-list">
+          <div class="empty-state">暂无笔记，点击上方按钮创建</div>
+        </div>
+      </div>
+
+      <!-- Right panel: note editor -->
+      <div class="panel panel-right">
+        <div id="editor-placeholder" class="editor-placeholder">
+          <div class="empty-state">
+            <p>📝</p>
+            <p>选择一条笔记查看或编辑</p>
+            <p>或创建一条新笔记</p>
+          </div>
+        </div>
+        <div id="editor" class="editor" style="display:none">
+          <div class="editor-toolbar">
+            <input type="text" id="editor-title" placeholder="笔记标题" class="editor-title">
+            <div class="editor-actions">
+              <button id="btn-save" class="btn btn-primary btn-sm">💾 保存</button>
+              <button id="btn-delete" class="btn btn-danger btn-sm">🗑️ 删除</button>
+              <button id="btn-close" class="btn btn-secondary btn-sm">✕ 关闭</button>
+            </div>
+          </div>
+          <textarea id="editor-content" placeholder="开始写下你的笔记..." class="editor-content"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <footer class="status-bar">
+      <span id="note-count">笔记: 0</span>
+      <span id="status-text">就绪</span>
+    </footer>
+  </div>
+
+  <!-- Main application script -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
