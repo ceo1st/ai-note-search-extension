@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI 笔记语义搜索</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Dexie.js for IndexedDB -->
-  <script src="https://unpkg.com/dexie@3.2.7/dist/dexie.js"></script>
-  <!-- Fuse.js for keyword fallback search -->
-  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+  <!-- Dexie.js for IndexedDB (local vendor) -->
+  <script src="vendor/dexie.min.js"></script>
+  <!-- Fuse.js for keyword fallback search (local vendor) -->
+  <script src="vendor/fuse.min.js"></script>
+  <!-- Transformers.js for AI embeddings (local vendor) -->
+  <script src="vendor/transformers.bundle.js"></script>
 </head>
 <body>
   <div id="app">

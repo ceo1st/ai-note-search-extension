@@ -1,11 +1,18 @@
 // app.js - Main application logic for AI Note Search Extension
 // Orchestrates DB, embedding model, search, and UI
 
-import { addNote, updateNote, deleteNote, getAllNotes, getNote, getEmbedding, exportData, importData, getNoteCount } from "./lib/db.js";
-import { initModel, getEmbedding as embed, isModelReady, getModelError, resetModel } from "./lib/embedding.js";
+import {
+  addNote, updateNote, deleteNote, getAllNotes, getNote,
+  getAllEmbeddings, exportData, importData, getNoteCount,
+  deleteEmbeddingForNote
+} from "./lib/db.js";
+import {
+  initModel, getEmbedding as embed, isModelReady, getModelError, resetModel
+} from "./lib/embedding.js";
 import { findTopK } from "./lib/vector.js";
-import { buildIndex, search as fuseSearch, highlightMatches, isReady as fuseReady } from "./lib/fuseSearch.js";
-import { getAllEmbeddings } from "./lib/db.js";
+import {
+  buildIndex, search as fuseSearch, highlightMatches, isReady as fuseReady
+} from "./lib/fuseSearch.js";
 
 // ===== State =====
 let searchMode = "loading"; // "semantic" | "keyword" | "loading"
@@ -213,6 +220,13 @@ async function handleSave() {
 
     if (currentNoteId) {
       await updateNote(currentNoteId, noteData, vector);
+
+      // Task 5 fix: if in degraded mode (keyword), delete stale embedding
+      // so it will be re-generated when semantic search recovers
+      if (searchMode === "keyword") {
+        await deleteEmbeddingForNote(currentNoteId);
+      }
+
       setStatus("笔记已更新");
     } else {
       const newId = await addNote(noteData, vector);
@@ -324,6 +338,9 @@ async function handleExport() {
   }
 }
 
+/**
+ * Task 4 fix: Auto-backup before import, validate structure, use transaction
+ */
 async function handleImport(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -335,10 +352,32 @@ async function handleImport(e) {
 
   try {
     setStatus("导入中...");
+
+    // Task 4: Auto-backup before import
+    try {
+      const backupData = await exportData();
+      if (backupData.notes.length > 0) {
+        const backupJson = JSON.stringify(backupData, null, 2);
+        const backupBlob = new Blob([backupJson], { type: "application/json" });
+        const backupUrl = URL.createObjectURL(backupBlob);
+        const backupLink = document.createElement("a");
+        backupLink.href = backupUrl;
+        backupLink.download = `ai-notes-pre-import-backup-${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.json`;
+        document.body.appendChild(backupLink);
+        backupLink.click();
+        document.body.removeChild(backupLink);
+        URL.revokeObjectURL(backupUrl);
+        console.log("Auto-backup downloaded before import");
+      }
+    } catch (backupErr) {
+      console.warn("Auto-backup failed, continuing with import:", backupErr);
+    }
+
     const text = await file.text();
     const data = JSON.parse(text);
 
-    await importData(data);
+    // Task 4: importData now validates + uses transaction
+    const stats = await importData(data);
 
     allNotes = await getAllNotes();
 
@@ -354,7 +393,7 @@ async function handleImport(e) {
     renderNotesList(allNotes);
     updateNoteCount();
     closeEditor();
-    setStatus(`导入完成: ${data.notes.length} 条笔记`);
+    setStatus(`导入完成: ${stats.noteCount} 条笔记, ${stats.embeddingCount} 条嵌入`);
   } catch (err) {
     console.error("Import failed:", err);
     setStatus("导入失败: " + err.message);
@@ -381,9 +420,8 @@ async function ensureEmbeddings() {
     try {
       const text = `${note.title} ${note.content}`;
       const vector = await embed(text);
-      const { updateNote: updateFn } = await import("./lib/db.js");
-      // Add embedding without updating the note itself
-      const db = (await import("./lib/db.js")).default;
+      // Add embedding directly to the embeddings table
+      const db = (await import("./lib/db.js")).getDb();
       await db.embeddings.add({ noteId: note.id, vector: Array.from(vector) });
 
       setStatus(`生成嵌入: ${i + 1}/${missingNotes.length}`);
